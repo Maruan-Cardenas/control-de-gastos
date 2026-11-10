@@ -7,13 +7,14 @@ import { DashboardQuadrants } from '../components/DashboardQuadrants';
 import { SmartAuditSection } from '../components/SmartAuditSection';
 import { RecurringAndPiggySection } from '../components/RecurringAndPiggySection';
 import { ExpensesListWithFilters } from '../components/ExpensesListWithFilters';
+import { IncomeManagementSection } from '../components/IncomeManagementSection';
 import { QuickExpenseModal } from '../components/QuickExpenseModal';
 import { BatchWorkApprovalModal } from '../components/BatchWorkApprovalModal';
 import { ExtraIncomeModal } from '../components/ExtraIncomeModal';
 import { CategoryBudgetsModal } from '../components/CategoryBudgetsModal';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'audit' | 'fixed_piggy' | 'transactions'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'income' | 'audit' | 'fixed_piggy' | 'transactions'>('dashboard');
 
   return (
     <AppProvider>
@@ -25,6 +26,7 @@ export default function Home() {
         {/* Main Application Container */}
         <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {activeTab === 'dashboard' && <DashboardQuadrants />}
+          {activeTab === 'income' && <IncomeManagementSection />}
           {activeTab === 'audit' && <SmartAuditSection />}
           {activeTab === 'fixed_piggy' && <RecurringAndPiggySection />}
           {activeTab === 'transactions' && <ExpensesListWithFilters />}

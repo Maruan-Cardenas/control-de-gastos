@@ -64,8 +64,11 @@ interface AppContextType {
 
   saveBatchWorkDays: (days: WorkDayIncome[]) => Promise<void>;
   addWorkDay: (day: WorkDayIncome) => Promise<void>;
+  updateWorkDay: (day: WorkDayIncome) => Promise<void>;
+  deleteWorkDay: (id: string) => Promise<void>;
 
   addExtraIncome: (income: Omit<ExtraIncome, 'id' | 'createdAt'>) => Promise<void>;
+  updateExtraIncome: (income: ExtraIncome) => Promise<void>;
   deleteExtraIncome: (id: string) => Promise<void>;
 
   addRecurringExpense: (item: Omit<RecurringExpense, 'id'>) => Promise<void>;
@@ -249,6 +252,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     await firestoreService.saveWorkDaysBatch(days);
   };
 
+  const updateWorkDay = async (day: WorkDayIncome) => {
+    setWorkDays(prev => prev.map(w => (w.id === day.id || w.date === day.date ? day : w)));
+    await firestoreService.saveWorkDay(day);
+  };
+
+  const deleteWorkDay = async (id: string) => {
+    setWorkDays(prev => prev.filter(w => w.id !== id));
+    await firestoreService.deleteWorkDay(id);
+  };
+
   const addExtraIncome = async (data: Omit<ExtraIncome, 'id' | 'createdAt'>) => {
     const newIncome: ExtraIncome = {
       ...data,
@@ -257,6 +270,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     setExtraIncomes(prev => [newIncome, ...prev]);
     await firestoreService.saveExtraIncome(newIncome);
+  };
+
+  const updateExtraIncome = async (income: ExtraIncome) => {
+    setExtraIncomes(prev => prev.map(i => (i.id === income.id ? income : i)));
+    await firestoreService.saveExtraIncome(income);
   };
 
   const deleteExtraIncome = async (id: string) => {
@@ -437,8 +455,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
         saveBatchWorkDays,
         addWorkDay,
+        updateWorkDay,
+        deleteWorkDay,
 
         addExtraIncome,
+        updateExtraIncome,
         deleteExtraIncome,
 
         addRecurringExpense,

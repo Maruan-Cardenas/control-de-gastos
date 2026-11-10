@@ -105,6 +105,15 @@ export const firestoreService = {
     }
   },
 
+  deleteWorkDay: async (id: string): Promise<void> => {
+    try {
+      const ref = doc(db, COLLECTIONS.WORK_DAYS, id);
+      await deleteDoc(ref);
+    } catch (err) {
+      console.warn('Firestore delete notice:', err);
+    }
+  },
+
   // Save extra income
   saveExtraIncome: async (income: ExtraIncome): Promise<void> => {
     try {

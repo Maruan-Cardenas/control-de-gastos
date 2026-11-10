@@ -21,8 +21,8 @@ const MONTH_NAMES = [
 ];
 
 interface HeaderProps {
-  activeTab: 'dashboard' | 'audit' | 'fixed_piggy' | 'transactions';
-  setActiveTab: (tab: 'dashboard' | 'audit' | 'fixed_piggy' | 'transactions') => void;
+  activeTab: 'dashboard' | 'income' | 'audit' | 'fixed_piggy' | 'transactions';
+  setActiveTab: (tab: 'dashboard' | 'income' | 'audit' | 'fixed_piggy' | 'transactions') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
@@ -210,6 +210,17 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
             }`}
           >
             4 Cuadrantes & Matriz
+          </button>
+
+          <button
+            onClick={() => setActiveTab('income')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap flex items-center gap-1.5 ${
+              activeTab === 'income'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            Ingresos (Jornadas & Extras)
           </button>
 
           <button
