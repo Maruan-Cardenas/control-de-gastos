@@ -63,7 +63,7 @@ export const ExpensesListWithFilters: React.FC = () => {
       date: editDate,
       person: editPerson,
       categoryId: editCategoryId,
-      notes: editNotes.trim() || undefined,
+      notes: editNotes.trim(),
     });
     setEditingExpense(null);
   };

@@ -64,8 +64,8 @@ export const QuickExpenseModal: React.FC = () => {
         date,
         person: selectedPerson,
         categoryId: selectedCategoryId,
-        subcategory: selectedSubcategory || undefined,
-        notes: notes.trim() || undefined,
+        subcategory: selectedSubcategory || '',
+        notes: notes.trim(),
       });
       setIsQuickExpenseOpen(false);
     } finally {

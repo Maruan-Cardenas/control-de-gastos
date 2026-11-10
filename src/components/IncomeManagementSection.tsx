@@ -110,7 +110,7 @@ export const IncomeManagementSection: React.FC = () => {
       puenteSurHours: editIsOff ? 0 : Number(editPuenteSurHours) || 0,
       sergioHours: editIsOff ? 0 : Number(editSergioHours) || 0,
       isOff: editIsOff,
-      notes: editWorkNotes.trim() || undefined,
+      notes: editWorkNotes.trim(),
       totalEarned,
     });
 

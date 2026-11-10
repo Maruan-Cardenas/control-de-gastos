@@ -62,13 +62,28 @@ export const localStore = {
   }
 };
 
+// Helper to recursively remove undefined values so Firestore never rejects them
+export function sanitizeForFirestore<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value === undefined) {
+      continue;
+    } else if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      result[key] = sanitizeForFirestore(value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
 // Firestore services with graceful fallback
 export const firestoreService = {
   // Save or update an expense
   saveExpense: async (expense: Expense): Promise<void> => {
     try {
       const ref = doc(db, COLLECTIONS.EXPENSES, expense.id);
-      await setDoc(ref, expense, { merge: true });
+      await setDoc(ref, sanitizeForFirestore(expense), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice (falling back locally):', err);
     }
@@ -87,7 +102,7 @@ export const firestoreService = {
   saveWorkDay: async (workDay: WorkDayIncome): Promise<void> => {
     try {
       const ref = doc(db, COLLECTIONS.WORK_DAYS, workDay.id);
-      await setDoc(ref, workDay, { merge: true });
+      await setDoc(ref, sanitizeForFirestore(workDay), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
@@ -98,7 +113,7 @@ export const firestoreService = {
     try {
       await Promise.all(workDays.map(day => {
         const ref = doc(db, COLLECTIONS.WORK_DAYS, day.id);
-        return setDoc(ref, day, { merge: true });
+        return setDoc(ref, sanitizeForFirestore(day), { merge: true });
       }));
     } catch (err) {
       console.warn('Firestore batch write notice:', err);
@@ -118,7 +133,7 @@ export const firestoreService = {
   saveExtraIncome: async (income: ExtraIncome): Promise<void> => {
     try {
       const ref = doc(db, COLLECTIONS.EXTRA_INCOMES, income.id);
-      await setDoc(ref, income, { merge: true });
+      await setDoc(ref, sanitizeForFirestore(income), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
@@ -137,7 +152,7 @@ export const firestoreService = {
   saveRecurringExpense: async (item: RecurringExpense): Promise<void> => {
     try {
       const ref = doc(db, COLLECTIONS.RECURRING_EXPENSES, item.id);
-      await setDoc(ref, item, { merge: true });
+      await setDoc(ref, sanitizeForFirestore(item), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
@@ -156,7 +171,7 @@ export const firestoreService = {
   savePiggyBank: async (bank: PiggyBank): Promise<void> => {
     try {
       const ref = doc(db, COLLECTIONS.PIGGY_BANKS, bank.id);
-      await setDoc(ref, bank, { merge: true });
+      await setDoc(ref, sanitizeForFirestore(bank), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
@@ -175,7 +190,7 @@ export const firestoreService = {
   saveBudget: async (budget: CategoryBudget): Promise<void> => {
     try {
       const ref = doc(db, COLLECTIONS.BUDGETS, budget.categoryId);
-      await setDoc(ref, budget, { merge: true });
+      await setDoc(ref, sanitizeForFirestore(budget), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
