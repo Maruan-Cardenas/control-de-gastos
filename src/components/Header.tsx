@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../lib/calculations';
 import { 
   ChevronLeft, 
@@ -12,7 +13,9 @@ import {
   TrendingDown, 
   Wallet, 
   PiggyBank as PiggyBankIcon,
-  Plus
+  Plus,
+  LogOut,
+  User as UserIcon
 } from 'lucide-react';
 
 const MONTH_NAMES = [
@@ -41,6 +44,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
     setIsBatchWorkOpen,
     setIsExtraIncomeOpen
   } = useApp();
+
+  const { user, signOutUser } = useAuth();
 
   const isPositive = periodNetBalance >= 0;
 
@@ -139,6 +144,29 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
               <Plus className="w-3.5 h-3.5 text-blue-400" />
               <span className="hidden sm:inline">Ingreso Extra</span>
             </button>
+
+            {/* User Profile & Sign Out */}
+            <div className="flex items-center gap-1.5 pl-1 sm:pl-2 border-l border-slate-800">
+              <div 
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 max-w-[130px] sm:max-w-[170px]"
+                title={user?.email || ''}
+              >
+                <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[10px] flex items-center justify-center shrink-0">
+                  {user?.displayName ? user.displayName.slice(0, 1).toUpperCase() : user?.email?.slice(0, 1).toUpperCase() || 'U'}
+                </div>
+                <span className="text-[11px] font-semibold text-slate-200 truncate">
+                  {user?.displayName || user?.email?.split('@')[0] || 'Mi Cuenta'}
+                </span>
+              </div>
+
+              <button
+                onClick={() => signOutUser()}
+                title="Cerrar sesión"
+                className="p-2 rounded-xl bg-slate-800 hover:bg-rose-950/40 hover:text-rose-400 text-slate-400 border border-slate-700 transition"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 

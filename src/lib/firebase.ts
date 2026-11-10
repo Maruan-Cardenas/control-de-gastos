@@ -10,6 +10,18 @@ import {
   orderBy, 
   Firestore 
 } from 'firebase/firestore';
+import { 
+  getAuth, 
+  Auth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut as firebaseSignOut, 
+  onAuthStateChanged, 
+  updateProfile, 
+  User 
+} from 'firebase/auth';
 import { Expense, WorkDayIncome, ExtraIncome, RecurringExpense, PiggyBank, CategoryBudget } from '../types';
 
 // Web app's Firebase configuration provided by user
@@ -25,8 +37,10 @@ const firebaseConfig = {
 // Initialize Firebase safely
 export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const db: Firestore = getFirestore(app);
+export const auth: Auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 
-// Firestore collection names
+// Firestore sub-collection names
 export const COLLECTIONS = {
   EXPENSES: 'expenses',
   WORK_DAYS: 'work_days',
@@ -34,28 +48,27 @@ export const COLLECTIONS = {
   RECURRING_EXPENSES: 'recurring_expenses',
   PIGGY_BANKS: 'piggy_banks',
   BUDGETS: 'category_budgets',
-  METADATA: 'app_metadata'
 } as const;
 
 // Helper to check if running in browser
 const isClient = typeof window !== 'undefined';
 
-// Generic LocalStorage fallback helpers
+// User-scoped LocalStorage helpers
 export const localStore = {
-  get: <T>(key: string, defaultValue: T): T => {
-    if (!isClient) return defaultValue;
+  getUser: <T>(userId: string, key: string, defaultValue: T): T => {
+    if (!isClient || !userId) return defaultValue;
     try {
-      const item = localStorage.getItem(`gastos_${key}`);
+      const item = localStorage.getItem(`gastos_${userId}_${key}`);
       return item ? JSON.parse(item) : defaultValue;
     } catch (e) {
       console.warn(`Error reading localStorage for ${key}:`, e);
       return defaultValue;
     }
   },
-  set: <T>(key: string, value: T): void => {
-    if (!isClient) return;
+  setUser: <T>(userId: string, key: string, value: T): void => {
+    if (!isClient || !userId) return;
     try {
-      localStorage.setItem(`gastos_${key}`, JSON.stringify(value));
+      localStorage.setItem(`gastos_${userId}_${key}`, JSON.stringify(value));
     } catch (e) {
       console.warn(`Error writing localStorage for ${key}:`, e);
     }
@@ -77,42 +90,45 @@ export function sanitizeForFirestore<T extends Record<string, any>>(obj: T): Rec
   return result;
 }
 
-// Firestore services with graceful fallback
+// User-scoped Firestore services
 export const firestoreService = {
-  // Save or update an expense
-  saveExpense: async (expense: Expense): Promise<void> => {
+  // Save or update an expense for a specific user
+  saveExpense: async (userId: string, expense: Expense): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.EXPENSES, expense.id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.EXPENSES, expense.id);
       await setDoc(ref, sanitizeForFirestore(expense), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice (falling back locally):', err);
     }
   },
 
-  deleteExpense: async (id: string): Promise<void> => {
+  deleteExpense: async (userId: string, id: string): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.EXPENSES, id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.EXPENSES, id);
       await deleteDoc(ref);
     } catch (err) {
       console.warn('Firestore delete notice:', err);
     }
   },
 
-  // Save or update a workday record
-  saveWorkDay: async (workDay: WorkDayIncome): Promise<void> => {
+  // Work days
+  saveWorkDay: async (userId: string, workDay: WorkDayIncome): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.WORK_DAYS, workDay.id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.WORK_DAYS, workDay.id);
       await setDoc(ref, sanitizeForFirestore(workDay), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
   },
 
-  // Batch save multiple workdays
-  saveWorkDaysBatch: async (workDays: WorkDayIncome[]): Promise<void> => {
+  saveWorkDaysBatch: async (userId: string, workDays: WorkDayIncome[]): Promise<void> => {
+    if (!userId) return;
     try {
       await Promise.all(workDays.map(day => {
-        const ref = doc(db, COLLECTIONS.WORK_DAYS, day.id);
+        const ref = doc(db, 'users', userId, COLLECTIONS.WORK_DAYS, day.id);
         return setDoc(ref, sanitizeForFirestore(day), { merge: true });
       }));
     } catch (err) {
@@ -120,28 +136,31 @@ export const firestoreService = {
     }
   },
 
-  deleteWorkDay: async (id: string): Promise<void> => {
+  deleteWorkDay: async (userId: string, id: string): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.WORK_DAYS, id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.WORK_DAYS, id);
       await deleteDoc(ref);
     } catch (err) {
       console.warn('Firestore delete notice:', err);
     }
   },
 
-  // Save extra income
-  saveExtraIncome: async (income: ExtraIncome): Promise<void> => {
+  // Extra incomes
+  saveExtraIncome: async (userId: string, income: ExtraIncome): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.EXTRA_INCOMES, income.id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.EXTRA_INCOMES, income.id);
       await setDoc(ref, sanitizeForFirestore(income), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
   },
 
-  deleteExtraIncome: async (id: string): Promise<void> => {
+  deleteExtraIncome: async (userId: string, id: string): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.EXTRA_INCOMES, id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.EXTRA_INCOMES, id);
       await deleteDoc(ref);
     } catch (err) {
       console.warn('Firestore delete notice:', err);
@@ -149,18 +168,20 @@ export const firestoreService = {
   },
 
   // Recurring expenses
-  saveRecurringExpense: async (item: RecurringExpense): Promise<void> => {
+  saveRecurringExpense: async (userId: string, item: RecurringExpense): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.RECURRING_EXPENSES, item.id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.RECURRING_EXPENSES, item.id);
       await setDoc(ref, sanitizeForFirestore(item), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
   },
 
-  deleteRecurringExpense: async (id: string): Promise<void> => {
+  deleteRecurringExpense: async (userId: string, id: string): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.RECURRING_EXPENSES, id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.RECURRING_EXPENSES, id);
       await deleteDoc(ref);
     } catch (err) {
       console.warn('Firestore delete notice:', err);
@@ -168,18 +189,20 @@ export const firestoreService = {
   },
 
   // Piggy banks
-  savePiggyBank: async (bank: PiggyBank): Promise<void> => {
+  savePiggyBank: async (userId: string, bank: PiggyBank): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.PIGGY_BANKS, bank.id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.PIGGY_BANKS, bank.id);
       await setDoc(ref, sanitizeForFirestore(bank), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
   },
 
-  deletePiggyBank: async (id: string): Promise<void> => {
+  deletePiggyBank: async (userId: string, id: string): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.PIGGY_BANKS, id);
+      const ref = doc(db, 'users', userId, COLLECTIONS.PIGGY_BANKS, id);
       await deleteDoc(ref);
     } catch (err) {
       console.warn('Firestore delete notice:', err);
@@ -187,25 +210,27 @@ export const firestoreService = {
   },
 
   // Budgets
-  saveBudget: async (budget: CategoryBudget): Promise<void> => {
+  saveBudget: async (userId: string, budget: CategoryBudget): Promise<void> => {
+    if (!userId) return;
     try {
-      const ref = doc(db, COLLECTIONS.BUDGETS, budget.categoryId);
+      const ref = doc(db, 'users', userId, COLLECTIONS.BUDGETS, budget.categoryId);
       await setDoc(ref, sanitizeForFirestore(budget), { merge: true });
     } catch (err) {
       console.warn('Firestore write notice:', err);
     }
   },
 
-  // Try to load all data from Firestore if available
-  fetchAllData: async () => {
+  // Fetch all user-scoped data from Firestore
+  fetchAllData: async (userId: string) => {
+    if (!userId) return null;
     try {
       const [expSnap, workSnap, extraSnap, recSnap, piggySnap, budgetSnap] = await Promise.all([
-        getDocs(query(collection(db, COLLECTIONS.EXPENSES), orderBy('date', 'desc'))),
-        getDocs(query(collection(db, COLLECTIONS.WORK_DAYS), orderBy('date', 'desc'))),
-        getDocs(query(collection(db, COLLECTIONS.EXTRA_INCOMES), orderBy('date', 'desc'))),
-        getDocs(collection(db, COLLECTIONS.RECURRING_EXPENSES)),
-        getDocs(collection(db, COLLECTIONS.PIGGY_BANKS)),
-        getDocs(collection(db, COLLECTIONS.BUDGETS))
+        getDocs(query(collection(db, 'users', userId, COLLECTIONS.EXPENSES), orderBy('date', 'desc'))),
+        getDocs(query(collection(db, 'users', userId, COLLECTIONS.WORK_DAYS), orderBy('date', 'desc'))),
+        getDocs(query(collection(db, 'users', userId, COLLECTIONS.EXTRA_INCOMES), orderBy('date', 'desc'))),
+        getDocs(collection(db, 'users', userId, COLLECTIONS.RECURRING_EXPENSES)),
+        getDocs(collection(db, 'users', userId, COLLECTIONS.PIGGY_BANKS)),
+        getDocs(collection(db, 'users', userId, COLLECTIONS.BUDGETS))
       ]);
 
       return {
