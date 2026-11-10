@@ -172,6 +172,7 @@ export const RecurringAndPiggySection: React.FC = () => {
               <label className="block text-[11px] font-semibold text-slate-300 mb-1">Objetivo (€)</label>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 required
                 placeholder="600.00"
@@ -184,6 +185,7 @@ export const RecurringAndPiggySection: React.FC = () => {
               <label className="block text-[11px] font-semibold text-slate-300 mb-1">Fondo Inicial (€)</label>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 placeholder="0.00"
                 value={piggyCurrent}
@@ -303,6 +305,7 @@ export const RecurringAndPiggySection: React.FC = () => {
               </p>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 required
                 placeholder="50.00"
@@ -388,6 +391,7 @@ export const RecurringAndPiggySection: React.FC = () => {
               <label className="block text-[11px] font-semibold text-slate-300 mb-1">Monto (€)</label>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 required
                 placeholder="480.00"
@@ -400,6 +404,7 @@ export const RecurringAndPiggySection: React.FC = () => {
               <label className="block text-[11px] font-semibold text-slate-300 mb-1">Día del mes (1-31)</label>
               <input
                 type="number"
+                inputMode="numeric"
                 min="1"
                 max="31"
                 required

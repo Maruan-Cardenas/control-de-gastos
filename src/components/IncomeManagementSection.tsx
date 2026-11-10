@@ -486,6 +486,7 @@ export const IncomeManagementSection: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
+                      inputMode="decimal"
                       step="0.5"
                       min="0"
                       max="24"
@@ -504,6 +505,7 @@ export const IncomeManagementSection: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
+                      inputMode="decimal"
                       step="0.5"
                       min="0"
                       max="24"
@@ -582,6 +584,7 @@ export const IncomeManagementSection: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 mb-1">Monto (€)</label>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 min="0.01"
                 required

@@ -280,6 +280,7 @@ export const BatchWorkApprovalModal: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <input
                               type="number"
+                              inputMode="decimal"
                               min="0"
                               max="24"
                               step="0.5"
@@ -304,6 +305,7 @@ export const BatchWorkApprovalModal: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <input
                               type="number"
+                              inputMode="decimal"
                               min="0"
                               max="24"
                               step="0.5"

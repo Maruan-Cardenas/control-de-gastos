@@ -110,6 +110,7 @@ export const QuickExpenseModal: React.FC = () => {
               <input
                 ref={inputRef}
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 min="0.01"
                 required

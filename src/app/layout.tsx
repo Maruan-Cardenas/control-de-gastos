@@ -1,9 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Control de Gastos & Finanzas Familiares | Marwan",
   description: "Gestión integral de gastos del hogar, control de horas diarias (Puente Sur & Sergio), matriz cruzada y auditoría inteligente de ahorro.",
+};
+
+// Disable mobile pinch-to-zoom and double-tap zoom
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

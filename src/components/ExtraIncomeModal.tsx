@@ -70,6 +70,7 @@ export const ExtraIncomeModal: React.FC = () => {
             </label>
             <input
               type="number"
+              inputMode="decimal"
               step="0.01"
               min="0.01"
               required

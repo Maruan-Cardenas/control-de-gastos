@@ -178,6 +178,7 @@ export const ExpensesListWithFilters: React.FC = () => {
                 <label className="block text-[11px] font-semibold text-slate-400 mb-1">Mín €</label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   placeholder="0"
                   value={filter.minAmount ?? ''}
                   onChange={e => setFilter(prev => ({ ...prev, minAmount: e.target.value ? parseFloat(e.target.value) : undefined }))}
@@ -188,6 +189,7 @@ export const ExpensesListWithFilters: React.FC = () => {
                 <label className="block text-[11px] font-semibold text-slate-400 mb-1">Máx €</label>
                 <input
                   type="number"
+                  inputMode="decimal"
                   placeholder="Max"
                   value={filter.maxAmount ?? ''}
                   onChange={e => setFilter(prev => ({ ...prev, maxAmount: e.target.value ? parseFloat(e.target.value) : undefined }))}
@@ -358,6 +360,7 @@ export const ExpensesListWithFilters: React.FC = () => {
               <label className="block text-xs font-semibold text-slate-300 mb-1">Importe (€)</label>
               <input
                 type="number"
+                inputMode="decimal"
                 step="0.01"
                 required
                 value={editAmount}

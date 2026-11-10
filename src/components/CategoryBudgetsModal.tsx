@@ -116,6 +116,7 @@ export const CategoryBudgetsModal: React.FC = () => {
                   <div className="relative w-28">
                     <input
                       type="number"
+                      inputMode="decimal"
                       step="10"
                       min="0"
                       placeholder="0"
